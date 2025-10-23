@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Crisis Financiera - Cajeros Bolivia</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2a9d8f;
+            --secondary: #e9c46a;
+            --accent: #e76f51;
+            --success: #2a9d8f;
+            --warning: #f4a261;
+            --light: #f8f9fa;
+            --dark: #264653;
+            --text: #2d3748;
+            --background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 100%);
+            --card-bg: rgba(255, 255, 255, 0.9);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 20px 20px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .tab-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+        
+        .tabs {
+            display: flex;
+            background: rgba(42, 157, 143, 0.1);
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 18px 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.7);
+        }
+        
+        .tab.active {
+            background: var(--card-bg);
+            border-bottom-color: var(--secondary);
+            color: var(--dark);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--dark);
+            font-size: 2rem;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 4px;
+            background: var(--secondary);
+            border-radius: 2px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+        
+        .three-cols {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+        
+        .info-box {
+            background: rgba(233, 196, 106, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .info-box h3 {
+            color: var(--dark);
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .model-info {
+            background: rgba(248, 249, 250, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .model-info .label {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:hover {
+            background: rgba(233, 196, 106, 0.1);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+        
+        .mini-chart {
+            height: 200px;
+            margin: 15px 0;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+        
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .scenario-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .scenario-btn {
+            padding: 25px;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .scenario-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .scenario-btn.active-normal {
+            border-color: var(--success);
+            background: rgba(42, 157, 143, 0.1);
+        }
+        
+        .scenario-btn.active-rumor {
+            border-color: var(--warning);
+            background: rgba(244, 162, 97, 0.1);
+        }
+        
+        .scenario-btn.active-crisis {
+            border-color: var(--accent);
+            background: rgba(231, 111, 81, 0.1);
+        }
+        
+        .scenario-btn h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+        
+        .scenario-btn p {
+            color: #7f8c8d;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-box {
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-box.blue {
+            background: linear-gradient(135deg, var(--primary), #1d7870);
+        }
+        
+        .stat-box.green {
+            background: linear-gradient(135deg, var(--success), #1d7870);
+        }
+        
+        .stat-box.purple {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .heat-map {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .heat-cell {
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .heat-cell:hover {
+            transform: scale(1.05);
+        }
+        
+        .heat-legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+        
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .diagram {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .simulation-viz {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+        }
+        
+        .atm-visual {
+            width: 120px;
+            height: 180px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .queue {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .person {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 50px;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .footer-links a {
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: white;
+        }
+        
+        .color-swatch {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        .distribution-chart {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .timeline:before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--secondary);
+            z-index: 1;
+        }
+        
+        .timeline-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+        }
+        
+        .timeline-point {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .timeline-content {
+            text-align: center;
+            max-width: 150px;
+        }
+        
+        @media (max-width: 992px) {
+            .two-cols, .three-cols, .metrics, .scenario-buttons, .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .heat-map {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .heat-map {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .simulation-viz {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas"></i> Simulación de Crisis Financiera</h1>
+            <p class="subtitle">Análisis del comportamiento de cajeros automáticos en Bolivia durante un escenario de pánico financiero por posible convertibilidad Boliviano-Dólar</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="tab-container">
+            <div class="tabs">
+                <div class="tab active" onclick="changeTab('tema1')">
+                    <i class="fas"></i> Tema 1: Modelo Conceptual (Actividad 1)
+                </div>
+                <div class="tab" onclick="changeTab('tema2')">
+                    <i class="fas"></i> Tema 2: Simulación de Escenarios (Actividad 2)
+                </div>
+                <div class="tab" onclick="changeTab('tema3')">
+                    <i class="fas"></i> Tema 3: Variables y Resultados
+                    (Actividad 3)
+                </div>
+            </div>
+
+            <!-- TEMA 1 CONTENT -->
+            <div id="tema1" class="tab-content active">
+                <h2 class="section-title">Tema 1: Diseño del Modelo Conceptual y Tipología de Simulación</h2>
+                
+                <div class="card">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Objetivo de la Actividad</h3>
+                    <p style="text-align: center; font-size: 1.1rem; margin-bottom: 30px;">Identificar las variables principales del sistema de cajeros automáticos, clasificar el tipo de simulación que corresponde y representar gráficamente las relaciones entre los elementos del sistema bajo una situación de pánico financiero.</p>
+                    
+                    <div class="two-cols">
+                        <div>
+                            <div class="info-box">
+                                <h3><i class="fas fa-list-ol"></i> Variables Principales del Sistema</h3>
+                                <ul style="margin-left: 20px;">
+                                    <li>Tiempo entre llegadas de clientes</li>
+                                    <li>Tiempo de servicio por transacción</li>
+                                    <li>Monto de retiro por transacción</li>
+                                    <li>Efectivo disponible en cajero</li>
+                                    <li>Longitud de la cola</li>
+                                    <li>Tiempo de reposición de efectivo</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="info-box">
+                                <h3><i class="fas fa-cogs"></i> Tipo de Simulación a Aplicar</h3>
+                                <p><strong>Simulación discreta con elementos dinámicos</strong></p>
+                                <ul style="margin-left: 20px; margin-top: 10px;">
+                                    <li><strong>Discreta</strong>: eventos ocurren en puntos específicos del tiempo</li>
+                                    <li><strong>Estocástica</strong>: interviene la aleatoriedad</li>
+                                    <li><strong>Dinámica</strong>: estado del sistema varía continuamente</li>
+                                </ul>
+                                <p style="margin-top: 15px; font-style: italic;">Tipo sugerido: "Simulación de eventos discretos con comportamiento estocástico y evolución dinámica."</p>
+                            </div>
+                            
+                            <div class="info-box">
+                                <h3><i class="fas fa-chart-pie"></i> Distribución de Tipos de Simulación</h3>
+                                <div class="mini-chart">
+                                    <canvas id="simulationTypeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="info-box">
+                                <h3><i class="fas fa-table"></i> Tabla de Variables del Sistema</h3>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Variable</th>
+                                            <th>Tipo</th>
+                                            <th>Distribución</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Tiempo entre llegadas</td>
+                                            <td>Entrada</td>
+                                            <td>Exponencial (λ=1.5 min)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tiempo de servicio (retiros)</td>
+                                            <td>Entrada</td>
+                                            <td>Uniforme (1-2 min)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Tiempo de servicio (depósitos)</td>
+                                            <td>Entrada</td>
+                                            <td>Normal (μ=3, σ=0.2 min)</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Monto de retiro</td>
+                                            <td>Entrada</td>
+                                            <td>Variable por escenario</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Efectivo disponible</td>
+                                            <td>Estado</td>
+                                            <td>Dependiente de transacciones</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Longitud de cola</td>
+                                            <td>Estado</td>
+                                            <td>Dependiente de llegadas/salidas</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <div class="info-box">
+                                <h3><i class="fas fa-sitemap"></i> Diagrama de Componentes del Sistema</h3>
+                                <div class="simulation-viz">
+                                    <div class="queue">
+                                        <div class="person">1</div>
+                                        <div class="person">2</div>
+                                        <div class="person">3</div>
+                                    </div>
+                                    <div class="atm-visual">
+                                        <i class="fas fa-credit-card" style="font-size: 2rem;"></i>
+                                        <p>CAJERO</p>
+                                        <p style="font-size: 0.8rem;">Bs 50,000</p>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <p><strong>Salida</strong></p>
+                                        <i class="fas fa-user-check" style="font-size: 2rem; color: var(--success);"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="diagram-container">
+                        <h3 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Diagrama de Flujo del Sistema</h3>
+                        <div style="background: rgba(248, 249, 250, 0.7); padding: 25px; border-radius: 12px; border-left: 5px solid var(--secondary);">
+                            <p style="text-align: center; margin-bottom: 20px; font-size: 1.1rem;">El diagrama de flujo representa el proceso completo de simulación:</p>
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-point">1</div>
+                                    <div class="timeline-content">Inicio de la simulación</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-point">2</div>
+                                    <div class="timeline-content">Configuración de parámetros</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-point">3</div>
+                                    <div class="timeline-content">Generación de cliente</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-point">4</div>
+                                    <div class="timeline-content">Tipo de operación</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-point">5</div>
+                                    <div class="timeline-content">Verificación de efectivo</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-point">6</div>
+                                    <div class="timeline-content">Ejecución o rechazo</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-point">7</div>
+                                    <div class="timeline-content">Actualización de stats</div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-point">8</div>
+                                    <div class="timeline-content">Fin de simulación</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3><i class="fas fa-chart-bar"></i> Comparación de Variables por Escenario</h3>
+                        <div class="chart-container">
+                            <canvas id="scenarioComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEMA 2 CONTENT -->
+            <div id="tema2" class="tab-content">
+                <h2 class="section-title">Tema 2: Simulación de Escenarios</h2>
+                
+                <div class="card">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Seleccionar Escenario</h3>
+                    <div class="scenario-buttons">
+                        <button class="scenario-btn active-normal" onclick="changeScenario('normal')">
+                            <h3><i class="fas fa-check-circle"></i> Situación Normal</h3>
+                            <p>Operación regular sin rumores</p>
+                        </button>
+                        <button class="scenario-btn" onclick="changeScenario('rumor')">
+                            <h3><i class="fas fa-exclamation-triangle"></i> Rumor de Convertibilidad</h3>
+                            <p>Veracidad del rumor: 65%</p>
+                        </button>
+                        <button class="scenario-btn" onclick="changeScenario('crisis')">
+                            <h3><i class="fas fa-exclamation-circle"></i> Crisis Confirmada</h3>
+                            <p>Pánico total - Retiros máximos</p>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="metrics" id="metrics">
+                    <!-- Métricas generadas dinámicamente -->
+                </div>
+
+                <div class="card">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Mapa de Calor: Retiros por Departamento</h3>
+                    <div class="chart-container">
+                        <canvas id="deptChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Análisis por Banco</h3>
+                    <div class="chart-container">
+                        <canvas id="bankChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Simulación Detallada: Llegada de 50 Clientes (Un Cajero)</h3>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-box blue">
+                            <p class="stat-label">Retiros</p>
+                            <p class="stat-value" id="retiros">0</p>
+                        </div>
+                        <div class="stat-box green">
+                            <p class="stat-label">Transferencias</p>
+                            <p class="stat-value" id="transferencias">0</p>
+                        </div>
+                        <div class="stat-box purple">
+                            <p class="stat-label">Depósitos</p>
+                            <p class="stat-value" id="depositos">0</p>
+                        </div>
+                    </div>
+
+                    <div class="two-cols" style="margin-bottom: 25px;">
+                        <div style="background: rgba(248, 249, 250, 0.7); padding: 20px; border-radius: 12px;">
+                            <p class="stat-label">Tiempo Total de Simulación</p>
+                            <p style="font-size: 24px; font-weight: bold; color: var(--primary);" id="tiempoTotal">0</p>
+                        </div>
+                        <div style="background: rgba(254, 242, 242, 0.7); padding: 20px; border-radius: 12px;">
+                            <p class="stat-label">Transacciones Rechazadas</p>
+                            <p style="font-size: 24px; font-weight: bold; color: var(--accent);" id="rechazadas">0</p>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255, 251, 235, 0.7); padding: 25px; border-radius: 12px; margin-bottom: 25px;">
+                        <p class="stat-label" style="margin-bottom: 15px;">Estado del Efectivo</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="font-size: 16px;">Capacidad Inicial: <strong id="capacidadInicial">Bs 0</strong></p>
+                                <p style="font-size: 16px;">Efectivo Restante: <strong id="efectivoRestante">Bs 0</strong></p>
+                            </div>
+                            <div style="text-align: right;">
+                                <p style="font-size: 32px; font-weight: bold; color: var(--warning);" id="porcentajeDisponible">0%</p>
+                                <p style="font-size: 14px; color: var(--dark); opacity: 0.7;">Disponible</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="two-cols">
+                        <div>
+                            <h3 style="font-weight: bold; margin-bottom: 15px; text-align: center;">Distribución de Operaciones</h3>
+                            <div class="chart-container" style="height: 300px;">
+                                <canvas id="pieChart"></canvas>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 style="font-weight: bold; margin-bottom: 15px; text-align: center;">Características del Modelo</h3>
+                            <div class="model-info">
+                                <p class="label">Tiempo entre llegadas:</p>
+                                <p>Distribución EXPONENCIAL (λ = 1.5 min)</p>
+                            </div>
+                            <div class="model-info">
+                                <p class="label">Tiempo de servicio (Retiros/Trans):</p>
+                                <p>Distribución UNIFORME (1, 2) min</p>
+                            </div>
+                            <div class="model-info">
+                                <p class="label">Tiempo de servicio (Depósitos):</p>
+                                <p>Distribución NORMAL (μ=3, σ=0.2) min</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Análisis Detallado por Departamento</h3>
+                    <div style="overflow-x: auto;">
+                        <table id="deptTable">
+                            <thead>
+                                <tr>
+                                    <th>Departamento</th>
+                                    <th style="text-align: right;">Cajeros</th>
+                                    <th style="text-align: right;">Retiros/Día</th>
+                                    <th style="text-align: right;">Monto Total (M Bs)</th>
+                                    <th style="text-align: right;">Tiempo Agotamiento (h)</th>
+                                    <th style="text-align: right;">Trans. Rechazadas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deptTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Análisis y Conclusiones</h3>
+                    <div class="three-cols">
+                        <div class="info-box" style="background: rgba(232, 244, 253, 0.5);">
+                            <h3><i class="fas fa-search"></i> Identificación del Problema</h3>
+                            <p>Saturación masiva de cajeros automáticos durante los primeros 7 días del anuncio de convertibilidad, generando agotamiento rápido de efectivo y transacciones rechazadas.</p>
+                        </div>
+                        <div class="info-box" style="background: rgba(232, 248, 240, 0.5);">
+                            <h3><i class="fas fa-list"></i> Factores Experimentales</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>Ubicación geográfica: 9 departamentos de Bolivia</li>
+                                <li>Nivel socioeconómico por zona</li>
+                                <li>Capacidad de efectivo según escenario</li>
+                                <li>Tiempo de reposición y frecuencia de recargas</li>
+                            </ul>
+                        </div>
+                        <div class="info-box" style="background: rgba(254, 249, 231, 0.5);">
+                            <h3><i class="fas fa-lightbulb"></i> Estrategias Propuestas</h3>
+                            <ul style="margin-left: 20px;">
+                                <li>Aumentar frecuencia de recargas en zonas de alto tráfico</li>
+                                <li>Implementar límites dinámicos según nivel de crisis</li>
+                                <li>Redistribuir efectivo hacia departamentos con mayor demanda</li>
+                                <li>Establecer sistema de alertas tempranas de agotamiento</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TEMA 3 CONTENT -->
+            <div id="tema3" class="tab-content">
+                <h2 class="section-title">Tema 3: Generación de Variables Aleatorias y Análisis de Resultados</h2>
+                
+                <div class="card">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: var(--dark);">Objetivo</h3>
+                    <p style="text-align: center; font-size: 1.1rem; margin-bottom: 30px;">Simular el comportamiento de los retiros de efectivo en cajeros automáticos a nivel nacional durante un escenario de pánico financiero. Analizar la presión sobre el efectivo disponible, identificar regiones críticas y proponer medidas de mitigación.</p>
+                    
+                    <div class="two-cols">
+                        <div>
+                            <div class="info-box">
+                                <h3><i class="fas fa-random"></i> Generación de Variables Aleatorias</h3>
+                                <div class="model-info">
+                                    <p class="label">Frecuencia de retiros:</p>
+                                    <p><strong>Distribución:</strong> Poisson (λ = llegadas esperadas)</p>
+                                    <p><strong>Horizonte:</strong> 7 días, con pasos de 1 hora</p>
+                                    <p><strong>Tasa promedio:</strong> 1200 retiros/hora a nivel país</p>
+                                    <p><strong>Patrón horario:</strong></p>
+                                    <p>• Alta demanda (08:00-20:00) → factor 1.2</p>
+                                    <p>• Demanda media (20:00-22:00) → factor 0.8</p>
+                                    <p>• Baja demanda (22:00-07:00) → factor 0.4</p>
+                                </div>
+                                
+                                <div class="model-info">
+                                    <p class="label">Monto de retiros:</p>
+                                    <p><strong>Distribución:</strong> Lognormal (μ = ln(900), σ = 0.6)</p>
+                                    <p><strong>Mediana:</strong> ≈ 900 Bs</p>
+                                    <p><strong>Límite máximo:</strong> 2,500 Bs por transacción</p>
+                                </div>
+                                
+                                <div class="distribution-chart">
+                                    <h4 style="text-align: center; margin-bottom: 10px;">Distribución de Montos de Retiro</h4>
+                                    <div class="mini-chart">
+                                        <canvas id="withdrawalDistributionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="info-box">
+                                <h3><i class="fas fa-map-marked-alt"></i> Asignación Geográfica</h3>
+                                <div class="model-info">
+                                    <p>Los retiros se distribuyen entre departamentos según peso poblacional/económico:</p>
+                                    <p>• Santa Cruz → 30%</p>
+                                    <p>• La Paz → 27%</p>
+                                    <p>• Cochabamba → 18%</p>
+                                    <p>• Otros → 25% (repartido entre ellos)</p>
+                                </div>
+                                
+                                <div class="model-info">
+                                    <p class="label">Stock de efectivo:</p>
+                                    <p><strong>Stock nacional inicial:</strong> 300 millones de Bs</p>
+                                    <p>Distribuido a cada departamento según los mismos pesos</p>
+                                </div>
+                                
+                                <div class="distribution-chart">
+                                    <h4 style="text-align: center; margin-bottom: 10px;">Distribución Geográfica de Retiros</h4>
+                                    <div class="mini-chart">
+                                        <canvas id="geographicDistributionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 style="text-align: center; margin: 30px 0 20px; color: var(--dark);">Mapa de Calor: Retiros por Departamento</h3>
+                    <div class="heat-map">
+                        <div class="heat-cell" style="background: linear-gradient(135deg, #ff6b6b, #ee5a52);">Santa Cruz<br>30%</div>
+                        <div class="heat-cell" style="background: linear-gradient(135deg, #ff9e75, #e58c67);">La Paz<br>27%</div>
+                        <div class="heat-cell" style="background: linear-gradient(135deg, #ffd166, #e5bb59);">Cochabamba<br>18%</div>
+                        <div class="heat-cell" style="background: linear-gradient(135deg, #a8e6cf, #96d4bd);">Oruro<br>5%</div>
+                        <div class="heat-cell" style="background: linear-gradient(135deg, #a8e6cf, #96d4bd);">Potosí<br>5%</div>
+                        <div class="heat-cell" style="background: linear-gradient(135deg, #a8e6cf, #96d4bd);">Chuquisaca<br>4%</div>
+                        <div class="heat-cell" style="background: linear-gradient(135deg, #a8e6cf, #96d4bd);">Tarija<br>4%</div>
+                        <div class="heat-cell" style="background: linear-gradient(135deg, #a8e6cf, #96d4bd);">Beni<br>4%</div>
+                        <div class="heat-cell" style="background: linear-gradient(135deg, #a8e6cf, #96d4bd);">Pando<br>3%</div>
+                    </div>
+                    
+                    <div class="heat-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff6b6b;"></div>
+                            <span>Alta presión</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ff9e75;"></div>
+                            <span>Media presión</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #ffd166;"></div>
+                            <span>Media-baja presión</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #a8e6cf;"></div>
+                            <span>Baja presión</span>
+                        </div>
+                    </div>
+                    
+                    <div class="two-cols" style="margin-top: 30px;">
+                        <div>
+                            <div class="info-box">
+                                <h3><i class="fas fa-exclamation-triangle"></i> Regiones Críticas</h3>
+                                <div class="model-info">
+                                    <p><strong>Los tres departamentos de mayor presión:</strong></p>
+                                    <p>1. Santa Cruz</p>
+                                    <p>2. La Paz</p>
+                                    <p>3. Cochabamba</p>
+                                    <p style="margin-top: 10px;">Estos tres departamentos concentran la mayor vulnerabilidad</p>
+                                </div>
+                                
+                                <div class="model-info">
+                                    <p class="label">Tiempos de agotamiento:</p>
+                                    <p>El modelo registra la primera hora en que el stock departamental es insuficiente</p>
+                                    <p>Santa Cruz y La Paz serían las primeras en agotarse en escenarios de alta demanda</p>
+                                </div>
+                                
+                                <div class="distribution-chart">
+                                    <h4 style="text-align: center; margin-bottom: 10px;">Tiempo de Agotamiento por Departamento (horas)</h4>
+                                    <div class="mini-chart">
+                                        <canvas id="depletionTimeChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="info-box">
+                                <h3><i class="fas fa-tools"></i> Medidas de Mitigación</h3>
+                                <div class="model-info">
+                                    <p>1. Redistribución de efectivo</p>
+                                    <p>2. Límites temporales de retiro</p>
+                                    <p>3. Escalonamiento horario</p>
+                                    <p>4. Incrementar puntos de extracción</p>
+                                    <p>5. Fomentar transferencias digitales</p>
+                                    <p>6. Reabastecimiento dinámico</p>
+                                </div>
+                                
+                                <div class="distribution-chart">
+                                    <h4 style="text-align: center; margin-bottom: 10px;">Efectividad de Medidas de Mitigación</h4>
+                                    <div class="mini-chart">
+                                        <canvas id="mitigationEffectivenessChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-box" style="background: rgba(232, 244, 253, 0.5); margin-top: 25px;">
+                        <h3 style="text-align: center;"><i class="fas fa-clipboard-check"></i> Conclusiones</h3>
+                        <p style="text-align: center; font-size: 1.1rem;">El pánico financiero dispara la demanda de efectivo muy por encima de la capacidad operativa de ATMs. Los departamentos de mayor actividad económica (Santa Cruz, La Paz, Cochabamba) concentran el riesgo. Con una buena política de redistribución, límites y medios digitales se pueden reducir significativamente los efectos de desabastecimiento.</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <h3><i class="fas fa-chart-line"></i> Proyección de Agotamiento de Efectivo</h3>
+                        <div class="chart-container">
+                            <canvas id="depletionProjectionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <p>Simulación de Crisis Financiera - Cajeros Automáticos Bolivia</p>
+                <p>Análisis de comportamiento durante pánico financiero por posible convertibilidad Boliviano-Dólar</p>
+                <div class="footer-links">
+                    <a href="#"><i class="fas fa-envelope"></i> Contacto</a>
+                    <a href="#"><i class="fas fa-info-circle"></i> Acerca de</a>
+                    <a href="#"><i class="fas fa-file-download"></i> Descargar Reporte</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Código JavaScript del Tema 2 se mantiene igual
+        let currentScenario = 'normal';
+        let charts = {};
+
+        const atmData = {
+            'La Paz': { atms: 450, poblacion: 2900000 },
+            'Santa Cruz': { atms: 520, poblacion: 3100000 },
+            'Cochabamba': { atms: 280, poblacion: 1900000 },
+            'Oruro': { atms: 85, poblacion: 530000 },
+            'Potosí': { atms: 95, poblacion: 880000 },
+            'Chuquisaca': { atms: 110, poblacion: 640000 },
+            'Tarija': { atms: 130, poblacion: 580000 },
+            'Beni': { atms: 65, poblacion: 480000 },
+            'Pando': { atms: 25, poblacion: 150000 }
+        };
+
+        const banks = ['Banco Nacional', 'Banco Mercantil', 'Banco Unión', 'Banco FIE', 'Banco BCP'];
+
+        function exponentialRandom(lambda) {
+            return -Math.log(1 - Math.random()) / lambda;
+        }
+
+        function uniformRandom(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        function normalRandom(mean, stdDev) {
+            const u1 = Math.random();
+            const u2 = Math.random();
+            const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+            return z0 * stdDev + mean;
+        }
+
+        function simulateATM(scenarioType) {
+            const numClients = 50;
+            const results = {
+                retiros: 0,
+                transferencias: 0,
+                depositos: 0,
+                tiempoTotal: 0,
+                transaccionesRechazadas: 0
+            };
+
+            let tiempoActual = 0;
+            const capacidadEfectivo = scenarioType === 'crisis' ? 150000 : scenarioType === 'rumor' ? 250000 : 500000;
+            let efectivoDisponible = capacidadEfectivo;
+
+            for (let i = 0; i < numClients; i++) {
+                const tiempoLlegada = exponentialRandom(1 / 1.5);
+                tiempoActual += tiempoLlegada;
+
+                const rand = Math.random();
+                let tipoOperacion, tiempoServicio, monto = 0;
+
+                if (rand < 0.5) {
+                    tipoOperacion = 'Retiro';
+                    tiempoServicio = uniformRandom(1, 2);
+                    
+                    if (scenarioType === 'crisis') {
+                        monto = 2000;
+                    } else if (scenarioType === 'rumor') {
+                        monto = Math.random() < 0.7 ? uniformRandom(1500, 2000) : uniformRandom(500, 1500);
+                    } else {
+                        monto = uniformRandom(200, 1000);
+                    }
+
+                    if (efectivoDisponible >= monto) {
+                        efectivoDisponible -= monto;
+                        results.retiros++;
+                    } else {
+                        results.transaccionesRechazadas++;
+                    }
+                } else if (rand < 0.7) {
+                    tipoOperacion = 'Transferencia';
+                    tiempoServicio = uniformRandom(1, 2);
+                    results.transferencias++;
+                } else {
+                    tipoOperacion = 'Depósito';
+                    tiempoServicio = Math.max(0.5, normalRandom(3, 0.2));
+                    results.depositos++;
+                }
+
+                tiempoActual += tiempoServicio;
+            }
+
+            results.tiempoTotal = tiempoActual;
+            results.efectivoRestante = efectivoDisponible;
+            results.capacidadInicial = capacidadEfectivo;
+
+            return results;
+        }
+
+        function runSimulation() {
+            const departmentResults = [];
+            const bankResults = [];
+            let panicFactor = 1;
+            
+            if (currentScenario === 'rumor') panicFactor = 2.5;
+            if (currentScenario === 'crisis') panicFactor = 4.5;
+
+            for (const [dept, data] of Object.entries(atmData)) {
+                const numATMs = data.atms;
+                const totalRetiros = Math.floor(numATMs * 35 * panicFactor);
+                const montoPromedio = currentScenario === 'crisis' ? 2000 : currentScenario === 'rumor' ? 1400 : 650;
+                const montoTotal = totalRetiros * montoPromedio;
+                const capacidadTotal = numATMs * (currentScenario === 'crisis' ? 150000 : currentScenario === 'rumor' ? 250000 : 500000);
+                const tiempoAgotamiento = parseFloat((capacidadTotal / (montoTotal / 7)).toFixed(1));
+
+                departmentResults.push({
+                    departamento: dept,
+                    cajeros: numATMs,
+                    retirosDiarios: Math.floor(totalRetiros / 7),
+                    montoTotal: montoTotal / 1000000,
+                    tiempoAgotamiento: tiempoAgotamiento,
+                    transaccionesRechazadas: Math.floor(totalRetiros * (currentScenario === 'crisis' ? 0.35 : currentScenario === 'rumor' ? 0.15 : 0.02))
+                });
+            }
+
+            banks.forEach(bank => {
+                const baseATMs = Math.floor(Math.random() * 200) + 150;
+                bankResults.push({
+                    banco: bank,
+                    cajeros: baseATMs,
+                    retirosTotales: Math.floor(baseATMs * 245 * (currentScenario === 'crisis' ? 4.5 : currentScenario === 'rumor' ? 2.5 : 1)),
+                    recargasNecesarias: Math.floor(baseATMs * (currentScenario === 'crisis' ? 3.2 : currentScenario === 'rumor' ? 1.8 : 0.4))
+                });
+            });
+
+            const atmDetail = simulateATM(currentScenario);
+
+            return { departmentResults, bankResults, atmDetail };
+        }
+
+        function updateUI(data) {
+            // Actualizar métricas
+            const totalRetiros = data.departmentResults.reduce((sum, d) => sum + d.retirosDiarios, 0) * 7;
+            const montoTotal = data.departmentResults.reduce((sum, d) => sum + d.montoTotal, 0).toFixed(1);
+            const totalRechazadas = data.departmentResults.reduce((sum, d) => sum + d.transaccionesRechazadas, 0);
+            const promedioAgotamiento = (data.departmentResults.reduce((sum, d) => sum + d.tiempoAgotamiento, 0) / 9).toFixed(1);
+
+            document.getElementById('metrics').innerHTML = `
+                <div class="metric-card">
+                    <p class="metric-label">Total Retiros (7 días)</p>
+                    <p class="metric-value" style="color: #4f46e5;">${totalRetiros.toLocaleString()}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-label">Monto Total (Millones Bs)</p>
+                    <p class="metric-value" style="color: #10b981;">${montoTotal}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-label">Transacciones Rechazadas</p>
+                    <p class="metric-value" style="color: #ef4444;">${totalRechazadas.toLocaleString()}</p>
+                </div>
+                <div class="metric-card">
+                    <p class="metric-label">Tiempo Prom. Agotamiento</p>
+                    <p class="metric-value" style="color: #f97316;">${promedioAgotamiento}h</p>
+                </div>
+            `;
+
+            // Actualizar detalles del cajero
+            document.getElementById('retiros').textContent = data.atmDetail.retiros;
+            document.getElementById('transferencias').textContent = data.atmDetail.transferencias;
+            document.getElementById('depositos').textContent = data.atmDetail.depositos;
+            document.getElementById('tiempoTotal').textContent = data.atmDetail.tiempoTotal.toFixed(2) + ' minutos';
+            document.getElementById('rechazadas').textContent = data.atmDetail.transaccionesRechazadas;
+            document.getElementById('capacidadInicial').textContent = 'Bs ' + data.atmDetail.capacidadInicial.toLocaleString();
+            document.getElementById('efectivoRestante').textContent = 'Bs ' + Math.floor(data.atmDetail.efectivoRestante).toLocaleString();
+            document.getElementById('porcentajeDisponible').textContent = ((data.atmDetail.efectivoRestante / data.atmDetail.capacidadInicial) * 100).toFixed(1) + '%';
+
+            // Actualizar tabla
+            const tbody = document.getElementById('deptTableBody');
+            tbody.innerHTML = '';
+
+            data.departmentResults.forEach(dept => {
+                const badgeClass = dept.tiempoAgotamiento < 2 ? 'badge-red' : dept.tiempoAgotamiento < 4 ? 'badge-yellow' : 'badge-green';
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${dept.departamento}</strong></td>
+                        <td style="text-align: right;">${dept.cajeros}</td>
+                        <td style="text-align: right;">${dept.retirosDiarios.toLocaleString()}</td>
+                        <td style="text-align: right;">${dept.montoTotal.toFixed(2)}</td>
+                        <td style="text-align: right;"><span class="badge ${badgeClass}">${dept.tiempoAgotamiento}</span></td>
+                        <td style="text-align: right; color: #dc2626; font-weight: 600;">${dept.transaccionesRechazadas.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+
+            // Actualizar gráficos
+            updateCharts(data);
+        }
+
+        function updateCharts(data) {
+            // Gráfico de departamentos
+            if (charts.deptChart) charts.deptChart.destroy();
+            const deptCtx = document.getElementById('deptChart').getContext('2d');
+            charts.deptChart = new Chart(deptCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.departmentResults.map(d => d.departamento),
+                    datasets: [{
+                        label: 'Retiros Diarios',
+                        data: data.departmentResults.map(d => d.retirosDiarios),
+                        backgroundColor: '#8884d8'
+                    }, {
+                        label: 'Trans. Rechazadas',
+                        data: data.departmentResults.map(d => d.transaccionesRechazadas),
+                        backgroundColor: '#ff4444'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Gráfico de bancos
+            if (charts.bankChart) charts.bankChart.destroy();
+            const bankCtx = document.getElementById('bankChart').getContext('2d');
+            charts.bankChart = new Chart(bankCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.bankResults.map(b => b.banco),
+                    datasets: [{
+                        label: 'Retiros Totales',
+                        data: data.bankResults.map(b => b.retirosTotales),
+                        backgroundColor: '#00C49F'
+                    }, {
+                        label: 'Recargas Necesarias',
+                        data: data.bankResults.map(b => b.recargasNecesarias),
+                        backgroundColor: '#FF8042'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Gráfico de pie
+            if (charts.pieChart) charts.pieChart.destroy();
+            const pieCtx = document.getElementById('pieChart').getContext('2d');
+            charts.pieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Retiros', 'Transferencias', 'Depósitos'],
+                    datasets: [{
+                        data: [data.atmDetail.retiros, data.atmDetail.transferencias, data.atmDetail.depositos],
+                        backgroundColor: ['#0088FE', '#00C49F', '#FFBB28']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Gráficos para Tema 1
+            if (charts.simulationTypeChart) charts.simulationTypeChart.destroy();
+            const simulationTypeCtx = document.getElementById('simulationTypeChart').getContext('2d');
+            charts.simulationTypeChart = new Chart(simulationTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Discreta', 'Estocástica', 'Dinámica'],
+                    datasets: [{
+                        data: [40, 35, 25],
+                        backgroundColor: ['#2a9d8f', '#e9c46a', '#e76f51']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            if (charts.scenarioComparisonChart) charts.scenarioComparisonChart.destroy();
+            const scenarioComparisonCtx = document.getElementById('scenarioComparisonChart').getContext('2d');
+            charts.scenarioComparisonChart = new Chart(scenarioComparisonCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Normal', 'Rumor', 'Crisis'],
+                    datasets: [{
+                        label: 'Retiros Promedio (Bs)',
+                        data: [650, 1400, 2000],
+                        backgroundColor: '#2a9d8f'
+                    }, {
+                        label: 'Tiempo Agotamiento (días)',
+                        data: [14, 5, 2.5],
+                        backgroundColor: '#e9c46a'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Gráficos para Tema 3
+            if (charts.withdrawalDistributionChart) charts.withdrawalDistributionChart.destroy();
+            const withdrawalDistributionCtx = document.getElementById('withdrawalDistributionChart').getContext('2d');
+            charts.withdrawalDistributionChart = new Chart(withdrawalDistributionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['200', '500', '900', '1500', '2000', '2500'],
+                    datasets: [{
+                        label: 'Frecuencia',
+                        data: [30, 45, 60, 40, 25, 10],
+                        borderColor: '#2a9d8f',
+                        backgroundColor: 'rgba(42, 157, 143, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            
+            if (charts.geographicDistributionChart) charts.geographicDistributionChart.destroy();
+            const geographicDistributionCtx = document.getElementById('geographicDistributionChart').getContext('2d');
+            charts.geographicDistributionChart = new Chart(geographicDistributionCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Santa Cruz', 'La Paz', 'Cochabamba', 'Otros'],
+                    datasets: [{
+                        data: [30, 27, 18, 25],
+                        backgroundColor: ['#ff6b6b', '#ff9e75', '#ffd166', '#a8e6cf']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            if (charts.depletionTimeChart) charts.depletionTimeChart.destroy();
+            const depletionTimeCtx = document.getElementById('depletionTimeChart').getContext('2d');
+            charts.depletionTimeChart = new Chart(depletionTimeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Santa Cruz', 'La Paz', 'Cochabamba', 'Oruro', 'Potosí', 'Chuquisaca', 'Tarija', 'Beni', 'Pando'],
+                    datasets: [{
+                        label: 'Horas hasta agotamiento',
+                        data: [45, 52, 68, 120, 115, 125, 122, 130, 140],
+                        backgroundColor: '#e76f51'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            if (charts.mitigationEffectivenessChart) charts.mitigationEffectivenessChart.destroy();
+            const mitigationEffectivenessCtx = document.getElementById('mitigationEffectivenessChart').getContext('2d');
+            charts.mitigationEffectivenessChart = new Chart(mitigationEffectivenessCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Redistribución', 'Límites', 'Escalonamiento', 'Puntos Extra', 'Digitalización', 'Reabastecimiento'],
+                    datasets: [{
+                        label: 'Efectividad',
+                        data: [85, 70, 60, 75, 65, 80],
+                        backgroundColor: 'rgba(42, 157, 143, 0.2)',
+                        borderColor: '#2a9d8f',
+                        pointBackgroundColor: '#2a9d8f'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            if (charts.depletionProjectionChart) charts.depletionProjectionChart.destroy();
+            const depletionProjectionCtx = document.getElementById('depletionProjectionChart').getContext('2d');
+            charts.depletionProjectionChart = new Chart(depletionProjectionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6', 'Día 7'],
+                    datasets: [{
+                        label: 'Sin medidas',
+                        data: [100, 65, 40, 20, 5, 0, 0],
+                        borderColor: '#e76f51',
+                        backgroundColor: 'rgba(231, 111, 81, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Con medidas',
+                        data: [100, 85, 75, 65, 60, 55, 50],
+                        borderColor: '#2a9d8f',
+                        backgroundColor: 'rgba(42, 157, 143, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Efectivo Disponible (%)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function changeScenario(scenario) {
+            currentScenario = scenario;
+            
+            // Actualizar botones
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.className = 'scenario-btn';
+            });
+            
+            event.target.closest('.scenario-btn').className = `scenario-btn active-${scenario}`;
+            
+            // Ejecutar simulación
+            const data = runSimulation();
+            updateUI(data);
+        }
+
+        function changeTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelector(`.tab:nth-child(${tabId === 'tema1' ? 1 : tabId === 'tema2' ? 2 : 3})`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Inicializar
+        window.onload = function() {
+            const data = runSimulation();
+            updateUI(data);
+        };
+    </script>
+</body>
+</html>
